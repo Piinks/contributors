@@ -76,14 +76,14 @@ Committers hold GitHub Write permissions (merge rights) and provide authoritativ
 
 | Contributor | GitHub profile | 12m merged PRs | 12m total activity |
 | :--- | :--- | :--- | :--- |
-| @AbdeMohlbi | [github.com/AbdeMohlbi](https://github.com/AbdeMohlbi) | 138 | 236 |
-| @huycozy | [github.com/huycozy](https://github.com/huycozy) | 11 | 33 |
-| @JavadAsadi | [github.com/JavadAsadi](https://github.com/JavadAsadi) | 42 | 48 |
-| @ksokolovskyi | [github.com/ksokolovskyi](https://github.com/ksokolovskyi) | 21 | 34 |
+| @AbdeMohlbi | [github.com/AbdeMohlbi](https://github.com/AbdeMohlbi) | 133 | 231 |
+| @huycozy | [github.com/huycozy](https://github.com/huycozy) | 10 | 32 |
+| @JavadAsadi | [github.com/JavadAsadi](https://github.com/JavadAsadi) | 46 | 52 |
+| @ksokolovskyi | [github.com/ksokolovskyi](https://github.com/ksokolovskyi) | 18 | 31 |
 | @Mairramer | [github.com/Mairramer](https://github.com/Mairramer) | 28 | 43 |
-| @navaronbracke | [github.com/navaronbracke](https://github.com/navaronbracke) | 43 | 334 |
-| @rkishan516 | [github.com/rkishan516](https://github.com/rkishan516) | 50 | 76 |
-| @ValentinVignal | [github.com/ValentinVignal](https://github.com/ValentinVignal) | 30 | 45 |
+| @navaronbracke | [github.com/navaronbracke](https://github.com/navaronbracke) | 43 | 335 |
+| @rkishan516 | [github.com/rkishan516](https://github.com/rkishan516) | 47 | 73 |
+| @ValentinVignal | [github.com/ValentinVignal](https://github.com/ValentinVignal) | 30 | 43 |
 
 ## Reviewers (`@flutter/reviewers`)
 
@@ -91,16 +91,16 @@ Reviewers hold GitHub Triage permissions, triage issues, and conduct first-pass 
 
 | Contributor | GitHub profile | 12m merged PRs | 12m total activity |
 | :--- | :--- | :--- | :--- |
-| @bleroux | [github.com/bleroux](https://github.com/bleroux) | 15 | 23 |
-| @csells | [github.com/csells](https://github.com/csells) | 11 | 21 |
+| @bleroux | [github.com/bleroux](https://github.com/bleroux) | 14 | 20 |
+| @csells | [github.com/csells](https://github.com/csells) | 10 | 20 |
 | @davidhicks980 | [github.com/davidhicks980](https://github.com/davidhicks980) | 12 | 24 |
-| @filiph | [github.com/filiph](https://github.com/filiph) | 0 | 10 |
+| @filiph | [github.com/filiph](https://github.com/filiph) | 0 | 9 |
 | @Hari-07 | [github.com/Hari-07](https://github.com/Hari-07) | 9 | 30 |
-| @htrolle-epam | [github.com/htrolle-epam](https://github.com/htrolle-epam) | 15 | 15 |
+| @htrolle-epam | [github.com/htrolle-epam](https://github.com/htrolle-epam) | 17 | 17 |
 | @jwinarske | [github.com/jwinarske](https://github.com/jwinarske) | 4 | 23 |
 | @piedcipher | [github.com/piedcipher](https://github.com/piedcipher) | 6 | 15 |
 | @RobertOdrowaz | [github.com/RobertOdrowaz](https://github.com/RobertOdrowaz) | 7 | 12 |
-| @stuartmorgan | [github.com/stuartmorgan](https://github.com/stuartmorgan) | 4 | 13 |
+| @stuartmorgan | [github.com/stuartmorgan](https://github.com/stuartmorgan) | 5 | 15 |
 | @tirth-patel-nc | [github.com/tirth-patel-nc](https://github.com/tirth-patel-nc) | 0 | 10 |
 | @wolfenrain | [github.com/wolfenrain](https://github.com/wolfenrain) | 0 | 16 |
 | @zemanux | [github.com/zemanux](https://github.com/zemanux) | 6 | 24 |
