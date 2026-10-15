@@ -129,7 +129,6 @@ Future<Map<String, Map<String, int>>> fetchActivityForRange(
   GitHubClient client, {
   required DateTime since,
   required DateTime until,
-  required Set<String> maintainers,
 }) async {
   final activeStats = <String, Map<String, int>>{};
 
@@ -181,9 +180,7 @@ query(\$query: String!, \$cursor: String) {
     final prNodes = search?['nodes'] as List? ?? [];
     for (final node in prNodes) {
       final author = node['author']?['login'] as String?;
-      if (author != null &&
-          !isExcludedAccount(author) &&
-          !maintainers.contains(author)) {
+      if (author != null && !isExcludedAccount(author)) {
         activeStats.putIfAbsent(
             author,
             () => {
@@ -205,8 +202,7 @@ query(\$query: String!, \$cursor: String) {
         final revAuthor = rev['author']?['login'] as String?;
         if (revAuthor != null &&
             revAuthor != author &&
-            !isExcludedAccount(revAuthor) &&
-            !maintainers.contains(revAuthor)) {
+            !isExcludedAccount(revAuthor)) {
           uniqueReviewers.add(revAuthor);
         }
       }
@@ -267,9 +263,7 @@ query(\$query: String!, \$cursor: String) {
     final issueNodes = search?['nodes'] as List? ?? [];
     for (final node in issueNodes) {
       final author = node['author']?['login'] as String?;
-      if (author != null &&
-          !isExcludedAccount(author) &&
-          !maintainers.contains(author)) {
+      if (author != null && !isExcludedAccount(author)) {
         activeStats.putIfAbsent(
             author,
             () => {
@@ -313,25 +307,12 @@ void main(List<String> args) async {
   final client = GitHubClient();
 
   try {
-    // 1. Fetch team members to exclude Googlers, Partners, and Robots
-    Set<String> googlers = {};
-    Set<String> partners = {};
+    // 1. Fetch @flutter/robots and @flutter/bots teams to exclude automation accounts
     try {
-      googlers = await client.getTeamMembers('flutter', 'googlers');
-      partners = await client.getTeamMembers('flutter', 'partners');
-      await loadRobotsTeam(client);
+      await loadRobotTeams(client);
     } catch (e) {
       // Elevated team read permissions may not be available with default GITHUB_TOKEN
-      print('Notice: Could not load maintainer/robot teams: $e');
-    }
-
-    final maintainers = {...googlers, ...partners};
-    if (maintainers.isEmpty) {
-      print(
-          'Notice: Maintainer teams returned 0 members (normal for standard CI GITHUB_TOKEN).');
-    } else {
-      print(
-          'Loaded Maintainer exclusions (${maintainers.length} members) and @flutter/robots team.');
+      print('Notice: Could not load robot teams: $e');
     }
 
     final activityDir = Directory('data/activity');
@@ -377,7 +358,6 @@ void main(List<String> args) async {
         client,
         since: range.since,
         until: range.until,
-        maintainers: maintainers,
       );
 
       final weekFile = File('data/activity/$weekString.json');

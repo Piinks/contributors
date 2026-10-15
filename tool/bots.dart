@@ -1,16 +1,18 @@
 import 'github.dart';
 
-/// Dynamic cache for members of the `@flutter/robots` GitHub team.
+/// Dynamic cache for members of the `@flutter/robots` and `@flutter/bots` GitHub teams.
 final Set<String> _robotTeamMembers = {};
 
-/// Fetches and caches members of the `@flutter/robots` GitHub team.
-Future<Set<String>> loadRobotsTeam(GitHubClient client) async {
-  try {
-    final members = await client.getTeamMembers('flutter', 'robots');
-    _robotTeamMembers.addAll(members.map((m) => m.toLowerCase()));
-  } catch (e) {
-    // Graceful fallback when running offline or without elevated team-read permissions
-    print('Notice: Could not load @flutter/robots team members: $e');
+/// Fetches and caches members of the `@flutter/robots` and `@flutter/bots` GitHub teams.
+Future<Set<String>> loadRobotTeams(GitHubClient client) async {
+  for (final teamSlug in ['robots', 'bots']) {
+    try {
+      final members = await client.getTeamMembers('flutter', teamSlug);
+      _robotTeamMembers.addAll(members.map((m) => m.toLowerCase()));
+    } catch (e) {
+      // Graceful fallback when running offline or without elevated team-read permissions
+      print('Notice: Could not load @flutter/$teamSlug team members: $e');
+    }
   }
   return _robotTeamMembers;
 }
@@ -30,7 +32,9 @@ const Set<String> knownBots = {
   'skia-flutter-autoroll[bot]',
   'flutter-autoroll',
   'flutter-autoroll[bot]',
+  'auto-submit',
   'auto-submit[bot]',
+  'google-cla',
   'google-cla[bot]',
   'googlebot',
   'copybara-service',
@@ -41,9 +45,20 @@ const Set<String> knownBots = {
   'flutter-website-bot',
   'flutter-intellij-kokoro',
   'fluttercerberus',
+  'flutterbuildbot',
+  'flutterdeploybot',
+  'fluttergalleryreleasebot',
+  'fluttermirroringbot',
   'DartDevtoolWorkflowBot',
   'buildbot',
+  'agentfu',
+  'kenzie-agent',
   'reidbaker-agent',
+  'google-admin',
+  'google-admin-automation-1',
+  'google-admin-automation-2',
+  'google-admin-backup',
+  'google-ospo-team',
   'gemini-code-assist',
   'gemini-code-assist[bot]',
 };
@@ -63,7 +78,7 @@ bool isExcludedAccount(String username) {
   return isGhost(username) || isBot(username);
 }
 
-/// Returns true if [username] belongs to `@flutter/robots` or matches a known bot pattern.
+/// Returns true if [username] belongs to `@flutter/robots` or `@flutter/bots`, or matches a known bot pattern.
 bool isBot(String username) {
   final lower = username.toLowerCase().trim();
   if (_robotTeamMembers.contains(lower)) {

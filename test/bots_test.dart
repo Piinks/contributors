@@ -1,8 +1,14 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:test/test.dart';
 import '../tool/bots.dart';
+import '../tool/github.dart';
 
 void main() {
   group('Bot Detection (isBot)', () {
+    tearDown(resetRobotTeamCache);
+
     test('identifies known bots in knownBots set', () {
       expect(isBot('dependabot'), isTrue);
       expect(isBot('dependabot[bot]'), isTrue);
@@ -13,7 +19,9 @@ void main() {
       expect(isBot('github-actions'), isTrue);
       expect(isBot('github-actions[bot]'), isTrue);
       expect(isBot('engine-flutter-autoroll'), isTrue);
+      expect(isBot('auto-submit'), isTrue);
       expect(isBot('auto-submit[bot]'), isTrue);
+      expect(isBot('google-cla'), isTrue);
       expect(isBot('google-cla[bot]'), isTrue);
       expect(isBot('renovate[bot]'), isTrue);
       expect(isBot('DartDevtoolWorkflowBot'), isTrue);
@@ -68,6 +76,29 @@ void main() {
       expect(isBot('  DEPENDABOT[BOT]  '), isTrue);
       expect(isBot('FlutterGithubBot'), isTrue);
       expect(isBot('  piinks  '), isFalse);
+    });
+
+    test(
+        'loadRobotTeams dynamically adds members of @flutter/robots and @flutter/bots to bots',
+        () async {
+      final mockClient = MockClient((request) async {
+        expect(
+          request.url.path,
+          anyOf(
+            equals('/orgs/flutter/teams/robots/members'),
+            equals('/orgs/flutter/teams/bots/members'),
+          ),
+        );
+        return http.Response(
+          jsonEncode([
+            {'login': 'dynamic-team-robot-account'}
+          ]),
+          200,
+        );
+      });
+      final gh = GitHubClient(token: 'test', httpClient: mockClient);
+      await loadRobotTeams(gh);
+      expect(isBot('dynamic-team-robot-account'), isTrue);
     });
   });
 }

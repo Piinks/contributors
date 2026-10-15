@@ -13,12 +13,17 @@ bool isValidGitHubUsername(String username) {
 
 /// Client for communicating with GitHub REST and GraphQL APIs across the Flutter organization.
 class GitHubClient {
-  GitHubClient({String? token, http.Client? httpClient})
-      : token = token ?? _resolveToken(),
-        _httpClient = httpClient ?? http.Client();
+  GitHubClient({
+    String? token,
+    http.Client? httpClient,
+    Future<void> Function(Duration)? delay,
+  })  : token = token ?? _resolveToken(),
+        _httpClient = httpClient ?? http.Client(),
+        _delay = delay ?? Future<void>.delayed;
 
   final String? token;
   final http.Client _httpClient;
+  final Future<void> Function(Duration) _delay;
 
   static String? _resolveToken() {
     final envToken = Platform.environment['ORG_READ_TOKEN'] ??
@@ -90,7 +95,7 @@ class GitHubClient {
         if (attempt < maxRetries && waitDuration.inSeconds <= 60) {
           print(
               'Rate limit encountered. Waiting ${waitDuration.inSeconds}s before retry $attempt...');
-          await Future<void>.delayed(waitDuration);
+          await _delay(waitDuration);
           continue;
         } else if (attempt == maxRetries) {
           throw Exception(
@@ -102,7 +107,7 @@ class GitHubClient {
       if (response.statusCode >= 500 &&
           response.statusCode <= 504 &&
           attempt < maxRetries) {
-        await Future<void>.delayed(Duration(seconds: attempt * 2));
+        await _delay(Duration(seconds: attempt * 2));
         continue;
       }
 

@@ -135,7 +135,11 @@ void main() {
             200);
       });
 
-      final client = GitHubClient(token: 'test', httpClient: mockClient);
+      final client = GitHubClient(
+        token: 'test',
+        httpClient: mockClient,
+        delay: (_) async {},
+      );
       final members = await client.getTeamMembers('flutter', 'robots');
 
       expect(callCount, equals(2));
@@ -148,11 +152,168 @@ void main() {
             headers: {'retry-after': '0'});
       });
 
-      final client = GitHubClient(token: 'test', httpClient: mockClient);
+      final client = GitHubClient(
+        token: 'test',
+        httpClient: mockClient,
+        delay: (_) async {},
+      );
       expect(
         () async => await client.getTeamMembers('flutter', 'robots'),
         throwsA(isA<Exception>()),
       );
+    });
+
+    test('retries on 502 server error and succeeds on subsequent attempt',
+        () async {
+      var callCount = 0;
+      final delays = <Duration>[];
+      final mockClient = MockClient((request) async {
+        callCount++;
+        if (callCount == 1) {
+          return http.Response('Bad Gateway', 502);
+        }
+        return http.Response(
+            jsonEncode([
+              {'login': 'alice'}
+            ]),
+            200);
+      });
+
+      final client = GitHubClient(
+        token: 'test',
+        httpClient: mockClient,
+        delay: (d) async => delays.add(d),
+      );
+      final members = await client.getTeamMembers('flutter', 'robots');
+      expect(callCount, equals(2));
+      expect(delays, equals([const Duration(seconds: 2)]));
+      expect(members, equals({'alice'}));
+    });
+
+    test('getChildTeams fetches child team slugs and handles 404', () async {
+      final mockClient = MockClient((request) async {
+        if (request.url.path.contains('non_existent')) {
+          return http.Response('Not Found', 404);
+        }
+        return http.Response(
+          jsonEncode([
+            {'slug': 'canonical'},
+            {'slug': 'tcs'},
+          ]),
+          200,
+        );
+      });
+
+      final client = GitHubClient(token: 'test', httpClient: mockClient);
+      final children = await client.getChildTeams('flutter', 'partners');
+      expect(children, equals(['canonical', 'tcs']));
+
+      final empty = await client.getChildTeams('flutter', 'non_existent');
+      expect(empty, isEmpty);
+    });
+
+    test('getUserActivity queries GraphQL and returns summed stats', () async {
+      final mockClient = MockClient((request) async {
+        return http.Response(
+          jsonEncode({
+            'data': {
+              'authored': {'issueCount': 12},
+              'issues': {'issueCount': 5},
+              'reviewed': {'issueCount': 8},
+            }
+          }),
+          200,
+        );
+      });
+
+      final client = GitHubClient(token: 'test', httpClient: mockClient);
+      final stats = await client.getUserActivity(
+        'octocat',
+        since: DateTime.utc(2025, 8, 1),
+        until: DateTime.utc(2026, 8, 1),
+      );
+
+      expect(
+          stats,
+          equals({
+            'merged_prs': 12,
+            'issues': 5,
+            'reviews': 8,
+            'total': 25,
+          }));
+    });
+
+    test(
+        'getBatchUserActivity returns batched results and falls back to sequential on error',
+        () async {
+      final emptyClient = GitHubClient(
+        token: 'test',
+        httpClient: MockClient((_) async => http.Response('{}', 200)),
+      );
+      expect(
+        await emptyClient.getBatchUserActivity([],
+            since: DateTime.utc(2025, 1, 1), until: DateTime.utc(2026, 1, 1)),
+        isEmpty,
+      );
+
+      // Test happy path batch query
+      final batchMock = MockClient((request) async {
+        return http.Response(
+          jsonEncode({
+            'data': {
+              'u_0_pr': {'issueCount': 10},
+              'u_0_issues': {'issueCount': 2},
+              'u_0_rev': {'issueCount': 3},
+              'u_1_pr': {'issueCount': 1},
+              'u_1_issues': {'issueCount': 4},
+              'u_1_rev': {'issueCount': 0},
+            }
+          }),
+          200,
+        );
+      });
+      final batchClient = GitHubClient(token: 'test', httpClient: batchMock);
+      final batchStats = await batchClient.getBatchUserActivity(
+        ['alice', 'bob'],
+        since: DateTime.utc(2025, 1, 1),
+        until: DateTime.utc(2026, 1, 1),
+      );
+      expect(batchStats['alice']?['total'], equals(15));
+      expect(batchStats['bob']?['total'], equals(5));
+
+      // Test fallback to sequential when batch query returns GraphQL error
+      var callNum = 0;
+      final fallbackMock = MockClient((request) async {
+        callNum++;
+        if (callNum == 1) {
+          return http.Response(
+            jsonEncode({
+              'errors': [
+                {'message': 'Batch query error'}
+              ]
+            }),
+            200,
+          );
+        }
+        return http.Response(
+          jsonEncode({
+            'data': {
+              'authored': {'issueCount': 3},
+              'issues': {'issueCount': 2},
+              'reviewed': {'issueCount': 1},
+            }
+          }),
+          200,
+        );
+      });
+      final fallbackClient =
+          GitHubClient(token: 'test', httpClient: fallbackMock);
+      final fallbackStats = await fallbackClient.getBatchUserActivity(
+        ['alice'],
+        since: DateTime.utc(2025, 1, 1),
+        until: DateTime.utc(2026, 1, 1),
+      );
+      expect(fallbackStats['alice']?['total'], equals(6));
     });
   });
 
