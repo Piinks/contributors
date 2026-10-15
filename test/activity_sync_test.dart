@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:test/test.dart';
+import '../tool/github.dart';
 import '../tool/sync_activity.dart';
 
 void main() {
@@ -97,6 +100,169 @@ void main() {
 
       final remaining = activityDir.listSync().whereType<File>().length;
       expect(remaining, equals(52));
+    });
+
+    test(
+        'pruneOldActivityFiles skips invalid filenames and handles missing dir',
+        () {
+      final missingDir = Directory('${tempDir.path}/non_existent');
+      expect(pruneOldActivityFiles(missingDir), equals(0));
+
+      final activityDir = Directory('${tempDir.path}/activity')..createSync();
+      File('${activityDir.path}/not-a-week.json').writeAsStringSync('{}');
+      File('${activityDir.path}/README.txt').writeAsStringSync('ignore');
+      expect(
+          pruneOldActivityFiles(activityDir,
+              referenceDate: DateTime.utc(2026, 8, 3)),
+          equals(0));
+    });
+
+    test(
+        'fetchActivityForRange aggregates PRs, deduplicated reviews, and issues while excluding bots and maintainers',
+        () async {
+      final mockClient = MockClient((request) async {
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        final variables = body['variables'] as Map<String, dynamic>;
+        final query = variables['query'] as String;
+
+        if (query.contains('is:pr')) {
+          return http.Response(
+            jsonEncode({
+              'data': {
+                'search': {
+                  'pageInfo': {'hasNextPage': false, 'endCursor': null},
+                  'nodes': [
+                    {
+                      'author': {'login': 'alice'},
+                      'reviews': {
+                        'nodes': [
+                          // Self-review by author should be ignored
+                          {
+                            'author': {'login': 'alice'}
+                          },
+                          // Duplicate review by bob on the same PR should count once
+                          {
+                            'author': {'login': 'bob'}
+                          },
+                          {
+                            'author': {'login': 'bob'}
+                          },
+                          // Maintainer review should be skipped
+                          {
+                            'author': {'login': 'Piinks'}
+                          },
+                          // Bot review should be skipped
+                          {
+                            'author': {'login': 'auto-submit'}
+                          },
+                        ]
+                      }
+                    },
+                    // PR by maintainer should be skipped, but community review on it counts
+                    {
+                      'author': {'login': 'Piinks'},
+                      'reviews': {
+                        'nodes': [
+                          {
+                            'author': {'login': 'alice'}
+                          }
+                        ]
+                      }
+                    },
+                    // PR by bot should be skipped
+                    {
+                      'author': {'login': 'engine-flutter-autoroll'},
+                      'reviews': {'nodes': <Map<String, dynamic>>[]}
+                    },
+                  ]
+                }
+              }
+            }),
+            200,
+          );
+        } else {
+          // Issue search
+          return http.Response(
+            jsonEncode({
+              'data': {
+                'search': {
+                  'pageInfo': {'hasNextPage': false, 'endCursor': null},
+                  'nodes': [
+                    {
+                      'author': {'login': 'alice'}
+                    },
+                    {
+                      'author': {'login': 'charlie'}
+                    },
+                    // Ghost and Maintainer issues should be skipped
+                    {
+                      'author': {'login': 'ghost'}
+                    },
+                    {
+                      'author': {'login': 'Piinks'}
+                    },
+                  ]
+                }
+              }
+            }),
+            200,
+          );
+        }
+      });
+
+      final client = GitHubClient(token: 'test', httpClient: mockClient);
+      final stats = await fetchActivityForRange(
+        client,
+        since: DateTime.utc(2026, 8, 1),
+        until: DateTime.utc(2026, 8, 8),
+        maintainers: {'Piinks'},
+      );
+
+      expect(
+          stats['alice'],
+          equals({
+            'merged_prs': 1,
+            'issues': 1,
+            'reviews': 1,
+            'total': 3,
+          }));
+      expect(
+          stats['bob'],
+          equals({
+            'merged_prs': 0,
+            'issues': 0,
+            'reviews': 1,
+            'total': 1,
+          }));
+      expect(
+          stats['charlie'],
+          equals({
+            'merged_prs': 0,
+            'issues': 1,
+            'reviews': 0,
+            'total': 1,
+          }));
+      expect(stats.containsKey('Piinks'), isFalse);
+      expect(stats.containsKey('auto-submit'), isFalse);
+      expect(stats.containsKey('ghost'), isFalse);
+
+      // By default (as used by sync_activity.dart in production), all non-bot
+      // org members (including Maintainers) are recorded so no one slips through.
+      final fullOrgStats = await fetchActivityForRange(
+        client,
+        since: DateTime.utc(2026, 8, 1),
+        until: DateTime.utc(2026, 8, 8),
+      );
+      expect(
+          fullOrgStats['Piinks'],
+          equals({
+            'merged_prs': 1,
+            'issues': 1,
+            'reviews': 1,
+            'total': 3,
+          }));
+      expect(fullOrgStats.containsKey('auto-submit'), isFalse);
+      expect(fullOrgStats.containsKey('ghost'), isFalse);
     });
   });
 }

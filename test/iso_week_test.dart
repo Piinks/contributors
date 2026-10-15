@@ -58,5 +58,10 @@ void main() {
         expect(formatIsoWeek(start), equals(week));
       }
     });
+
+    test('parseIsoWeekStart throws FormatException on invalid format', () {
+      expect(() => parseIsoWeekStart('2026-32'), throwsFormatException);
+      expect(() => parseIsoWeekStart('invalid'), throwsFormatException);
+    });
   });
 }
