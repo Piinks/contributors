@@ -9,6 +9,7 @@ The pipeline collects activity across all public repositories in the `flutter` G
 ## Metrics collected
 
 The pipeline records 3 qualifying contribution types:
+
 1. Merged pull requests, attributed to the PR author.
 2. Code reviews on merged pull requests, attributed to non-author reviewers.
 3. Issues opened across tracked repositories, attributed to the author.
@@ -21,7 +22,7 @@ Accounts in the `@flutter/robots` and `@flutter/bots` GitHub teams and known aut
 
 Data is stored as a 52-week sliding ring buffer in `data/`:
 
-```
+```text
 data/
 ├── activity/
 │   ├── 2025-W31.json
