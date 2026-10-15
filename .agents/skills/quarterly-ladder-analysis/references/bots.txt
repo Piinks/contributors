@@ -35,6 +35,7 @@ buildbot
 agentfu
 kenzie-agent
 reidbaker-agent
+renzo-olivares-agent
 google-admin
 google-admin-automation-1
 google-admin-automation-2

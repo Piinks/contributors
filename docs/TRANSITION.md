@@ -27,12 +27,12 @@ Inactive historical `flutter-hackers` ($< 10$ contributions in the preceding 12 
 
 ## Organization audit
 
-To ensure all existing GitHub organization members are categorized, the initial bootstrap tool (`tool/seed_initial_data.dart`) reviews all members of the `flutter` GitHub organization (`gh api orgs/flutter/members`) and cross-references each account against `@flutter/googlers`, `@flutter/partners`, `@flutter/flutter-hackers`, and 12-month activity data. Untracked active contributors are placed into their qualifying tier (`Committer` or `Reviewer`), while inactive organization members and former `flutter-hackers` ($< 10$ contributions in the preceding 12 months) transition to Dasher Emeritus, are removed from the GitHub organization, and are listed in [EMERITUS.md](../EMERITUS.md).
+To ensure all existing GitHub organization members are categorized, the initial audit reviews all members of the `flutter` GitHub organization (`gh api orgs/flutter/members`) and cross-references each account against `@flutter/googlers`, `@flutter/partners`, `@flutter/flutter-hackers`, and 12-month activity data to populate `data/contributors.yaml`. Untracked active contributors are placed into their qualifying tier (`Committer` or `Reviewer`), while inactive organization members and former `flutter-hackers` ($< 10$ contributions in the preceding 12 months) transition to Dasher Emeritus, are removed from the GitHub organization, and are listed in [EMERITUS.md](../EMERITUS.md).
 
 ## Retirement of static AUTHORS files
 
 Historically, repository-level `AUTHORS` files (`flutter/flutter/AUTHORS`, `flutter/packages/AUTHORS`, etc.) tracked individual contributors. Over time, these files became static and difficult to maintain. `flutter/contributors` now serves as the single source of truth for contributor roles and permissions, while historical `AUTHORS` files are preserved under `legacy_authors/`. The active ladder roster is published in [ROSTER.md](../ROSTER.md) and Dasher Emeriti are listed in [EMERITUS.md](../EMERITUS.md), both generated from `data/contributors.yaml`.
 
-## Data seeding
+## Rolling activity dataset
 
-`tool/seed_initial_data.dart` creates `data/activity_summary.json` seeded with the baseline Year 0 analysis, and daily syncs update the current ISO week activity in `data/activity/YYYY-Wxx.json`. Over the first 12 months, the rolling 52-week dataset becomes self-sustaining.
+`data/activity_summary.json` aggregates rolling 12-month contribution counts across the 52 weekly snapshots in `data/activity/YYYY-Wxx.json`, and daily syncs (`tool/sync_activity.dart`) update the current ISO week activity and recompute the summary automatically.
