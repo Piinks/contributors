@@ -1,3 +1,7 @@
+// Copyright 2014 The Flutter Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 import 'github.dart';
 
 /// Dynamic cache for members of the `@flutter/robots` and `@flutter/bots` GitHub teams.
@@ -42,6 +46,8 @@ const Set<String> knownBots = {
   'renovate',
   'renovate[bot]',
   'flutteractionsbot',
+  'flutter-pub-roller-bot',
+  'flutter-skills-sync-bot',
   'flutter-website-bot',
   'flutter-intellij-kokoro',
   'fluttercerberus',
