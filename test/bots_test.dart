@@ -7,6 +7,8 @@ import '../tool/github.dart';
 
 void main() {
   group('Bot Detection (isBot)', () {
+    tearDown(resetRobotTeamCache);
+
     test('identifies known bots in knownBots set', () {
       expect(isBot('dependabot'), isTrue);
       expect(isBot('dependabot[bot]'), isTrue);
@@ -76,7 +78,8 @@ void main() {
       expect(isBot('  piinks  '), isFalse);
     });
 
-    test('loadRobotsTeam dynamically adds members of @flutter/robots to bots',
+    test(
+        'loadRobotTeams dynamically adds members of @flutter/robots and @flutter/bots to bots',
         () async {
       final mockClient = MockClient((request) async {
         expect(
@@ -94,7 +97,7 @@ void main() {
         );
       });
       final gh = GitHubClient(token: 'test', httpClient: mockClient);
-      await loadRobotsTeam(gh);
+      await loadRobotTeams(gh);
       expect(isBot('dynamic-team-robot-account'), isTrue);
     });
   });

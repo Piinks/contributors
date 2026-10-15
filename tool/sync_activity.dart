@@ -129,7 +129,6 @@ Future<Map<String, Map<String, int>>> fetchActivityForRange(
   GitHubClient client, {
   required DateTime since,
   required DateTime until,
-  Set<String> maintainers = const {},
 }) async {
   final activeStats = <String, Map<String, int>>{};
 
@@ -181,9 +180,7 @@ query(\$query: String!, \$cursor: String) {
     final prNodes = search?['nodes'] as List? ?? [];
     for (final node in prNodes) {
       final author = node['author']?['login'] as String?;
-      if (author != null &&
-          !isExcludedAccount(author) &&
-          !maintainers.contains(author)) {
+      if (author != null && !isExcludedAccount(author)) {
         activeStats.putIfAbsent(
             author,
             () => {
@@ -205,8 +202,7 @@ query(\$query: String!, \$cursor: String) {
         final revAuthor = rev['author']?['login'] as String?;
         if (revAuthor != null &&
             revAuthor != author &&
-            !isExcludedAccount(revAuthor) &&
-            !maintainers.contains(revAuthor)) {
+            !isExcludedAccount(revAuthor)) {
           uniqueReviewers.add(revAuthor);
         }
       }
@@ -267,9 +263,7 @@ query(\$query: String!, \$cursor: String) {
     final issueNodes = search?['nodes'] as List? ?? [];
     for (final node in issueNodes) {
       final author = node['author']?['login'] as String?;
-      if (author != null &&
-          !isExcludedAccount(author) &&
-          !maintainers.contains(author)) {
+      if (author != null && !isExcludedAccount(author)) {
         activeStats.putIfAbsent(
             author,
             () => {
@@ -315,7 +309,7 @@ void main(List<String> args) async {
   try {
     // 1. Fetch @flutter/robots and @flutter/bots teams to exclude automation accounts
     try {
-      await loadRobotsTeam(client);
+      await loadRobotTeams(client);
     } catch (e) {
       // Elevated team read permissions may not be available with default GITHUB_TOKEN
       print('Notice: Could not load robot teams: $e');

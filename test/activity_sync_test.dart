@@ -118,7 +118,7 @@ void main() {
     });
 
     test(
-        'fetchActivityForRange aggregates PRs, deduplicated reviews, and issues while excluding bots and maintainers',
+        'fetchActivityForRange aggregates PRs, deduplicated reviews, and issues while excluding bots and ghost',
         () async {
       final mockClient = MockClient((request) async {
         final body = jsonDecode(request.body) as Map<String, dynamic>;
@@ -147,7 +147,7 @@ void main() {
                           {
                             'author': {'login': 'bob'}
                           },
-                          // Maintainer review should be skipped
+                          // Maintainer review should be recorded
                           {
                             'author': {'login': 'Piinks'}
                           },
@@ -158,7 +158,7 @@ void main() {
                         ]
                       }
                     },
-                    // PR by maintainer should be skipped, but community review on it counts
+                    // PR by maintainer and community review on it should both be recorded
                     {
                       'author': {'login': 'Piinks'},
                       'reviews': {
@@ -194,7 +194,7 @@ void main() {
                     {
                       'author': {'login': 'charlie'}
                     },
-                    // Ghost and Maintainer issues should be skipped
+                    // Ghost issue should be skipped
                     {
                       'author': {'login': 'ghost'}
                     },
@@ -215,7 +215,6 @@ void main() {
         client,
         since: DateTime.utc(2026, 8, 1),
         until: DateTime.utc(2026, 8, 8),
-        maintainers: {'Piinks'},
       );
 
       expect(
@@ -242,27 +241,17 @@ void main() {
             'reviews': 0,
             'total': 1,
           }));
-      expect(stats.containsKey('Piinks'), isFalse);
-      expect(stats.containsKey('auto-submit'), isFalse);
-      expect(stats.containsKey('ghost'), isFalse);
-
-      // By default (as used by sync_activity.dart in production), all non-bot
-      // org members (including Maintainers) are recorded so no one slips through.
-      final fullOrgStats = await fetchActivityForRange(
-        client,
-        since: DateTime.utc(2026, 8, 1),
-        until: DateTime.utc(2026, 8, 8),
-      );
       expect(
-          fullOrgStats['Piinks'],
+          stats['Piinks'],
           equals({
             'merged_prs': 1,
             'issues': 1,
             'reviews': 1,
             'total': 3,
           }));
-      expect(fullOrgStats.containsKey('auto-submit'), isFalse);
-      expect(fullOrgStats.containsKey('ghost'), isFalse);
+      expect(stats.containsKey('auto-submit'), isFalse);
+      expect(stats.containsKey('engine-flutter-autoroll'), isFalse);
+      expect(stats.containsKey('ghost'), isFalse);
     });
   });
 }

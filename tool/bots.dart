@@ -1,10 +1,10 @@
 import 'github.dart';
 
-/// Dynamic cache for members of the `@flutter/robots` GitHub team.
+/// Dynamic cache for members of the `@flutter/robots` and `@flutter/bots` GitHub teams.
 final Set<String> _robotTeamMembers = {};
 
 /// Fetches and caches members of the `@flutter/robots` and `@flutter/bots` GitHub teams.
-Future<Set<String>> loadRobotsTeam(GitHubClient client) async {
+Future<Set<String>> loadRobotTeams(GitHubClient client) async {
   for (final teamSlug in ['robots', 'bots']) {
     try {
       final members = await client.getTeamMembers('flutter', teamSlug);
@@ -78,7 +78,7 @@ bool isExcludedAccount(String username) {
   return isGhost(username) || isBot(username);
 }
 
-/// Returns true if [username] belongs to `@flutter/robots` or matches a known bot pattern.
+/// Returns true if [username] belongs to `@flutter/robots` or `@flutter/bots`, or matches a known bot pattern.
 bool isBot(String username) {
   final lower = username.toLowerCase().trim();
   if (_robotTeamMembers.contains(lower)) {

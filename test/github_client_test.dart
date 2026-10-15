@@ -135,7 +135,11 @@ void main() {
             200);
       });
 
-      final client = GitHubClient(token: 'test', httpClient: mockClient);
+      final client = GitHubClient(
+        token: 'test',
+        httpClient: mockClient,
+        delay: (_) async {},
+      );
       final members = await client.getTeamMembers('flutter', 'robots');
 
       expect(callCount, equals(2));
@@ -148,7 +152,11 @@ void main() {
             headers: {'retry-after': '0'});
       });
 
-      final client = GitHubClient(token: 'test', httpClient: mockClient);
+      final client = GitHubClient(
+        token: 'test',
+        httpClient: mockClient,
+        delay: (_) async {},
+      );
       expect(
         () async => await client.getTeamMembers('flutter', 'robots'),
         throwsA(isA<Exception>()),
@@ -158,6 +166,7 @@ void main() {
     test('retries on 502 server error and succeeds on subsequent attempt',
         () async {
       var callCount = 0;
+      final delays = <Duration>[];
       final mockClient = MockClient((request) async {
         callCount++;
         if (callCount == 1) {
@@ -170,9 +179,14 @@ void main() {
             200);
       });
 
-      final client = GitHubClient(token: 'test', httpClient: mockClient);
+      final client = GitHubClient(
+        token: 'test',
+        httpClient: mockClient,
+        delay: (d) async => delays.add(d),
+      );
       final members = await client.getTeamMembers('flutter', 'robots');
       expect(callCount, equals(2));
+      expect(delays, equals([const Duration(seconds: 2)]));
       expect(members, equals({'alice'}));
     });
 
