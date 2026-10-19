@@ -6,12 +6,13 @@ import 'dart:io';
 import 'package:test/test.dart';
 
 String _generateLicense(String prefix) {
-  return '${prefix}Copyright 2014 The Flutter Authors. All rights reserved.\n'
-      '${prefix}Use of this source code is governed by a BSD-style license that can be\n'
-      '${prefix}found in the LICENSE file.';
+  return '''
+${prefix}Copyright 2014 The Flutter Authors. All rights reserved.
+${prefix}Use of this source code is governed by a BSD-style license that can be
+${prefix}found in the LICENSE file.''';
 }
 
-final Map<String, String> _extensionPrefixes = {
+const _extensionPrefixes = {
   '.dart': '// ',
   '.js': '// ',
   '.cjs': '// ',
@@ -32,7 +33,7 @@ final Map<String, String> _extensionPrefixes = {
   '.bat': 'REM ',
 };
 
-const Set<String> _ignoredDirectories = {
+const _ignoredDirectories = {
   '.git',
   '.dart_tool',
   '.gemini',
