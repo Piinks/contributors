@@ -7,8 +7,7 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
   group: validate-${{ github.ref }}
@@ -18,10 +17,15 @@ jobs:
   validate:
     name: Validate Data Pipeline & Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Dart SDK
         uses: dart-lang/setup-dart@e51d8e571e22473a2ddebf0ef8a2123f0ab2c02c # v1.7.1
@@ -37,3 +41,44 @@ jobs:
 
       - name: Run unit test suite
         run: dart test
+
+      - name: Get Changed Markdown Files
+        id: changed-markdown
+        if: github.event_name == 'pull_request'
+        run: |
+          TARGET_REF="${BASE_REF:-main}"
+          TARGET_REF="${TARGET_REF#origin/}"
+          if git rev-parse --verify "origin/$TARGET_REF" >/dev/null 2>&1; then
+            BASE_TARGET="origin/$TARGET_REF"
+          elif git rev-parse --verify "$TARGET_REF" >/dev/null 2>&1; then
+            BASE_TARGET="$TARGET_REF"
+          else
+            echo "::error::Cannot resolve base branch ref 'origin/$TARGET_REF' or '$TARGET_REF'."
+            exit 1
+          fi
+          FILES=$(git diff --name-only --diff-filter=ACMR "$BASE_TARGET"...HEAD -- '*.md')
+          if [ -n "$FILES" ]; then
+            EOF_MARKER="EOF_$(openssl rand -hex 16)"
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "files<<$EOF_MARKER"
+              echo "$FILES"
+              echo "$EOF_MARKER"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          BASE_REF: ${{ github.base_ref }}
+
+      - name: Markdown Lint (PR Mode)
+        if: github.event_name == 'pull_request' && steps.changed-markdown.outputs.has_changes == 'true'
+        uses: davidanson/markdownlint-cli2-action@05f32210e84442804257b2a6f20b273450ec8265 # v19
+        with:
+          globs: ${{ steps.changed-markdown.outputs.files }}
+
+      - name: Markdown Lint (Full Repository)
+        if: github.event_name != 'pull_request'
+        uses: davidanson/markdownlint-cli2-action@05f32210e84442804257b2a6f20b273450ec8265 # v19
+        with:
+          globs: '**/*.md'
