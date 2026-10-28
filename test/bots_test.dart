@@ -31,6 +31,7 @@ void main() {
       expect(isBot('renovate[bot]'), isTrue);
       expect(isBot('DartDevtoolWorkflowBot'), isTrue);
       expect(isBot('reidbaker-agent'), isTrue);
+      expect(isBot('renzo-olivares-agent'), isTrue);
       expect(isBot('gemini-code-assist'), isTrue);
       expect(isBot('gemini-code-assist[bot]'), isTrue);
       expect(isBot('buildbot'), isTrue);
@@ -39,6 +40,7 @@ void main() {
     test('identifies pattern-based bot usernames', () {
       expect(isBot('some-user-bot'), isTrue);
       expect(isBot('some_user_bot'), isTrue);
+      expect(isBot('some-user-agent'), isTrue);
       expect(isBot('service[bot]'), isTrue);
       expect(isBot('flutter-autoroll'), isTrue);
       expect(isBot('custom-autoroll-service'), isTrue);

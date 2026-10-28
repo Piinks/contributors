@@ -60,6 +60,7 @@ const Set<String> knownBots = {
   'agentfu',
   'kenzie-agent',
   'reidbaker-agent',
+  'renzo-olivares-agent',
   'google-admin',
   'google-admin-automation-1',
   'google-admin-automation-2',
@@ -96,6 +97,7 @@ bool isBot(String username) {
   if (lower.endsWith('[bot]') ||
       lower.endsWith('-bot') ||
       lower.endsWith('_bot') ||
+      lower.endsWith('-agent') ||
       lower.contains('autoroll')) {
     return true;
   }
