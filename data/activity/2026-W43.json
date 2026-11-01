@@ -899,12 +899,6 @@
     "reviews": 10,
     "total": 30
   },
-  "meg4cyberc4t": {
-    "merged_prs": 1,
-    "issues": 0,
-    "reviews": 0,
-    "total": 1
-  },
   "mitryp": {
     "merged_prs": 0,
     "issues": 1,
@@ -922,6 +916,12 @@
     "issues": 2,
     "reviews": 0,
     "total": 2
+  },
+  "molchanovia": {
+    "merged_prs": 1,
+    "issues": 0,
+    "reviews": 0,
+    "total": 1
   },
   "mtallenca": {
     "merged_prs": 1,
