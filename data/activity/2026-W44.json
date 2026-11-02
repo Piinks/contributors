@@ -7,9 +7,9 @@
   },
   "ARAtlas": {
     "merged_prs": 0,
-    "issues": 2,
+    "issues": 3,
     "reviews": 0,
-    "total": 2
+    "total": 3
   },
   "Anfet": {
     "merged_prs": 1,
@@ -19,9 +19,9 @@
   },
   "ChandraChaan": {
     "merged_prs": 0,
-    "issues": 5,
+    "issues": 8,
     "reviews": 0,
-    "total": 5
+    "total": 8
   },
   "ChristophyBarth": {
     "merged_prs": 1,
@@ -581,6 +581,12 @@
     "reviews": 0,
     "total": 2
   },
+  "ichorid": {
+    "merged_prs": 0,
+    "issues": 1,
+    "reviews": 0,
+    "total": 1
+  },
   "jacobemcken": {
     "merged_prs": 0,
     "issues": 1,
@@ -721,9 +727,9 @@
   },
   "martin-robert-fink": {
     "merged_prs": 0,
-    "issues": 1,
+    "issues": 2,
     "reviews": 0,
-    "total": 1
+    "total": 2
   },
   "mattkae": {
     "merged_prs": 0,
@@ -750,6 +756,12 @@
     "total": 16
   },
   "milanobrtlik": {
+    "merged_prs": 0,
+    "issues": 1,
+    "reviews": 0,
+    "total": 1
+  },
+  "minchanpark": {
     "merged_prs": 0,
     "issues": 1,
     "reviews": 0,
@@ -802,6 +814,12 @@
     "issues": 1,
     "reviews": 3,
     "total": 4
+  },
+  "njemouipro": {
+    "merged_prs": 0,
+    "issues": 1,
+    "reviews": 0,
+    "total": 1
   },
   "npateras": {
     "merged_prs": 1,
